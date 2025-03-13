@@ -2,6 +2,8 @@
 
 Moon Hunter is a comprehensive lunar monitoring and planning application for photographers and astronomy enthusiasts. It provides detailed information about the moon's position, phase, and visibility, making it ideal for planning photography sessions.
 
+![Screenshot aplicație](CaptureMoon.PNG)
+
 ## Features
 
 ### Moon Tracking

@@ -1,0 +1,3 @@
+pyinstaller moonhunter.spec
+
+** iconita trebuie sa fie si in foldereul de unde se lanseaza comanda

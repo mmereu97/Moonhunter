@@ -1,0 +1,37 @@
+{
+    "window_size": [
+        1247,
+        1267
+    ],
+    "window_position": [
+        510,
+        25
+    ],
+    "hide_comune": true,
+    "romania_view": {
+        "judet": "Neam\u021b",
+        "localitate": "Roman"
+    },
+    "profile_view": "San Francisco",
+    "active_view": "romania",
+    "profiles": {
+        "Frankfurt am Main": {
+            "name": "Frankfurt am Main",
+            "latitude": 50.115812044780576,
+            "longitude": 8.598786490262972,
+            "timezone": "Europe/Berlin"
+        },
+        "San Francisco": {
+            "name": "San Francisco",
+            "latitude": 37.76282837892352,
+            "longitude": -122.45064987438221,
+            "timezone": "America/Los_Angeles"
+        },
+        "Birmingham": {
+            "name": "Birmingham",
+            "latitude": 52.51424981417535,
+            "longitude": -1.8834476760439216,
+            "timezone": "Europe/London"
+        }
+    }
+}
