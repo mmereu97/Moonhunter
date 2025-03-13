@@ -107,4 +107,4 @@ The application manages several configuration files:
 
 ## License
 
-[Specify your license information here]
+[Mihai Mereu]
