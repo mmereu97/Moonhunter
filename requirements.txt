@@ -1,7 +1,7 @@
 requests
-pytz
 pandas
 timezonefinder
 PyQt5
 skyfield
 geopy
+pywin32
