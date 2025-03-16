@@ -1,6 +1,7 @@
 .venv/
 .idea/
 build/
+dist/
 moonhunter.exe
 moon hunter.exe
 MoonHunter.exe
