@@ -9,8 +9,8 @@
     ],
     "hide_comune": true,
     "romania_view": {
-        "judet": "",
-        "localitate": ""
+        "judet": "Alba",
+        "localitate": "Abrud"
     },
     "profile_view": "San Francisco",
     "active_view": "romania",
