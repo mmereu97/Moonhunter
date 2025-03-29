@@ -207,9 +207,11 @@ class FullMoonDialog(QDialog):
         """)
         
         layout = QVBoxLayout()
+        layout.setContentsMargins(5, 3, 5, 3)
+        layout.setSpacing(3)
         
         title = QLabel("Rating luni pline - următoarele 12 luni")
-        title.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
+        title.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 3px;")
         layout.addWidget(title)
         
         self.ratings_widget = QWidget()
@@ -397,6 +399,8 @@ class TimeshiftWidget(QGroupBox):
         
     def init_ui(self):
         layout = QHBoxLayout()
+        layout.setContentsMargins(3, 3, 3, 3)
+        layout.setSpacing(3)
         
         # Left navigation button
         self.left_button = QPushButton("←")
@@ -1749,92 +1753,66 @@ class MoonPhaseWindow(QMainWindow):
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         layout = QVBoxLayout()
-        layout.setSpacing(2)  # Reducem spacing-ul între elemente
-        layout.setContentsMargins(10, 5, 10, 5)  # Reducem marginile
+        layout.setSpacing(1)  # Reducem spacing-ul între elemente
+        layout.setContentsMargins(10, 3, 10, 3)  # Reducem marginile
         main_widget.setLayout(layout)
 
-        # Creăm containerul superior pentru primele 4 secțiuni
+        # === ROW 1: Informatii timp + Selectare locatie + Coordonate GPS ===
         self.log_event("UI", "Creare containere principale")
         top_container = QWidget()
         top_layout = QHBoxLayout()
         top_layout.setSpacing(2)
+        top_layout.setContentsMargins(0, 0, 0, 0)
         top_container.setLayout(top_layout)
-       
-        # Container stânga
-        left_container = QWidget()
-        left_layout = QVBoxLayout()
-        left_layout.setSpacing(5)
-        left_container.setLayout(left_layout)
-       
-        # Container dreapta
-        right_container = QWidget()
-        right_layout = QVBoxLayout()
-        right_layout.setSpacing(5)
-        right_container.setLayout(right_layout)
-       
-        self.setStyleSheet("""
-            QMainWindow, QWidget {
-                background-color: #2b2b2b;
-            }
-            QGroupBox {
-                border: 2px solid #404040;
-                border-radius: 6px;
-                margin-top: 8px;
-                padding-top: 8px;
-                color: white;
-                font-size: 13px;
-                font-weight: bold;
-            }
-            QLabel, QCheckBox {
-                color: white;
-                font-size: 13px;
-            }
-            QComboBox, QLineEdit {
-                background-color: #404040;
-                color: white;
-                border: 1px solid #505050;
-                border-radius: 4px;
-                padding: 3px;
-                min-height: 20px;
-                font-size: 13px;
-            }
-            QPushButton {
-                background-color: #0d47a1;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 8px 15px;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #1565c0;
-            }
-        """)
 
+        # --- PRIMUL GRUP: Informatii Timp ---
+        self.log_event("UI", "Creare grup informații timp")
+        time_group = QGroupBox("Informații Timp")
+        time_layout = QVBoxLayout()
+        time_layout.setSpacing(3)
+       
+        self.current_time_label = QLabel()
+        self.current_time_label.setStyleSheet("font-size: 20px;")
+        self.current_time_label.setWordWrap(True)
+        
+        self.moonrise_time_label = QLabel()
+        self.moonrise_time_label.setStyleSheet("font-size: 20px;")
+        self.moonrise_time_label.setWordWrap(True)
+       
+        time_layout.addWidget(self.current_time_label)
+        time_layout.addWidget(self.moonrise_time_label)
+        time_group.setLayout(time_layout)
+
+        # --- AL DOILEA GRUP: Selectare Locatie ---
         self.log_event("UI", "Creare interfață selecție locație")
         location_group = QGroupBox("Selectare Locație")
         location_layout = QGridLayout()
-       
+        location_layout.setVerticalSpacing(3)
+
         self.judet_combo = QComboBox()
         self.localitate_combo = QComboBox()
-       
         judet_label = QLabel("Județ:")
         localitate_label = QLabel("Localitate:")
-       
         self.hide_comune_checkbox = QCheckBox("Ascunde comunele")
         self.hide_comune_checkbox.setChecked(self.settings.get('hide_comune', False))
         self.hide_comune_checkbox.stateChanged.connect(self.on_hide_comune_changed)
-       
+        update_location_button = QPushButton("Actualizează Locația")
+        update_location_button.clicked.connect(self.update_location_from_combos)
+
         location_layout.addWidget(judet_label, 0, 0)
         location_layout.addWidget(self.judet_combo, 0, 1)
+        location_layout.addWidget(self.hide_comune_checkbox, 0, 2, 1, 2)
+
         location_layout.addWidget(localitate_label, 1, 0)
         location_layout.addWidget(self.localitate_combo, 1, 1)
-        location_layout.addWidget(self.hide_comune_checkbox, 2, 0, 1, 2)
+        location_layout.addWidget(update_location_button, 1, 2, 1, 2)
+
+        location_group.setLayout(location_layout)
 
         self.log_event("DATE", "Populare listă județe")
         judete = self.data_manager.get_judete()
         self.judet_combo.addItems(judete)
-       
+
         last_judet = self.settings.get('last_judet', 'Alba')
         if last_judet in [self.judet_combo.itemText(i) for i in range(self.judet_combo.count())]:
             self.judet_combo.setCurrentText(last_judet)
@@ -1842,40 +1820,13 @@ class MoonPhaseWindow(QMainWindow):
             self.judet_combo.setCurrentIndex(0)
 
         self.judet_combo.currentTextChanged.connect(self.update_localitati)
-       
-        self.log_event("UI", "Actualizare listă localități")
         self.update_localitati(self.judet_combo.currentText())
-       
-        last_localitate = self.settings.get('last_localitate', '')
-        if last_localitate in [self.localitate_combo.itemText(i) for i in range(self.localitate_combo.count())]:
-            self.localitate_combo.setCurrentText(last_localitate)
 
-        update_location_button = QPushButton("Actualizează Locația")
-        update_location_button.clicked.connect(self.update_location_from_combos)
-        location_layout.addWidget(update_location_button, 3, 0, 1, 2)
-       
-        location_group.setLayout(location_layout)
-        left_layout.addWidget(location_group)
-
-        self.log_event("UI", "Creare grup informații timp")
-        time_group = QGroupBox("Informații Timp")
-        time_layout = QVBoxLayout()
-        time_layout.setSpacing(5)
-       
-        self.current_time_label = QLabel()
-        self.current_time_label.setStyleSheet("font-size: 24px;")
-        self.moonrise_time_label = QLabel()
-        self.moonrise_time_label.setStyleSheet("font-size: 24px;")
-       
-        time_layout.addWidget(self.current_time_label)
-        time_layout.addWidget(self.moonrise_time_label)
-        time_group.setLayout(time_layout)
-        left_layout.addWidget(time_group)
-
+        # --- AL TREILEA GRUP: Coordonate GPS ---
         self.log_event("UI", "Creare interfață GPS și profile")
         gps_group = QGroupBox("Coordonate GPS")
         gps_layout = QVBoxLayout()
-        gps_layout.setSpacing(10)
+        gps_layout.setSpacing(3)
 
         # Container pentru coordonate
         coords_container = QWidget()
@@ -1925,93 +1876,33 @@ class MoonPhaseWindow(QMainWindow):
 
         gps_group.setLayout(gps_layout)
 
-        self.log_event("UI", "Creare interfață poziție lună")
-        pos_group = QGroupBox("Poziția Lunii")
-        pos_layout = QVBoxLayout()
-        pos_layout.setSpacing(10)
-       
-        self.elevation_label = QLabel()
-        self.elevation_label.setStyleSheet("font-size: 16px;")
-        self.azimuth_label = QLabel()
-        self.azimuth_label.setStyleSheet("font-size: 16px;")
-       
-        # Adăugăm labels pentru distanță
-        self.distance_label = QLabel()
-        self.distance_label.setStyleSheet("font-size: 16px;")
-        self.distance_progress_label = QLabel()
-        self.distance_progress_label.setTextFormat(Qt.RichText)
+        # Adăugăm toate cele trei grupuri pe primul rând
+        top_layout.addWidget(time_group, 1)
+        top_layout.addWidget(location_group, 1)
+        top_layout.addWidget(gps_group, 1)
 
-        pos_layout.addWidget(self.elevation_label)
-        pos_layout.addWidget(self.azimuth_label)
-        pos_layout.addWidget(self.distance_label)
-        pos_layout.addWidget(self.distance_progress_label)
-
-        pos_group.setLayout(pos_layout)
-
-        right_layout.addWidget(pos_group)
- 
-        # Adăugăm containerele stânga și dreapta la layout-ul superior
-        top_layout.addWidget(left_container)
-        top_layout.addWidget(right_container)
-       
-        # Adăugăm containerul superior la layout-ul principal
-        layout.setSpacing(2)  # Adaugă această linie
-        top_container.layout().setSpacing(2)  # Adaugă această linie
+        # Adăugăm primul rând la layout-ul principal
         layout.addWidget(top_container)
 
-        right_layout.addWidget(gps_group)  # Păstrăm aceste două rânduri!
-        right_layout.addWidget(pos_group)  # Păstrăm aceste două rânduri!
+        # === ROW 2: Fotografii + Pozitia Lunii ===
+        self.log_event("UI", "Creare interfață poziție lună")
+        mid_container = QWidget()
+        mid_layout = QHBoxLayout()
+        mid_layout.setSpacing(2)
+        mid_layout.setContentsMargins(0, 0, 0, 0)
+        mid_container.setLayout(mid_layout)
 
-        # Creăm un container pentru Time Shift și Next Opportunity
-        timeshift_container = QWidget()
-        timeshift_layout = QHBoxLayout()
-        timeshift_layout.setSpacing(2)
-        timeshift_container.setLayout(timeshift_layout)
-
-        # Adăugăm Time Shift în partea stângă
-        self.timeshift_widget = TimeshiftWidget(self)
-
-        # Adăugăm Next Opportunity în partea dreaptă
-        next_opportunity_group = QGroupBox("Următoarea Oportunitate")
-        next_opportunity_layout = QHBoxLayout()
-        self.next_opportunity_label = QLabel("Nu există oportunități viitoare")
-        self.next_opportunity_label.setStyleSheet("""
-            QLabel {
-                color: white;
-                font-size: 14px;
-                padding: 5px;
-            }
-        """)
-        self.next_opportunity_label.setAlignment(Qt.AlignCenter)
-        next_opportunity_layout.addWidget(self.next_opportunity_label)
-        
-        # Aici adăugăm noul buton
-        self.full_moon_btn = QPushButton("Rating luni pline")
-        self.full_moon_btn.clicked.connect(self.show_full_moon_ratings)
-        next_opportunity_layout.addWidget(self.full_moon_btn)
-        next_opportunity_group.setLayout(next_opportunity_layout)
-
-        # Setăm proporțiile între cele două secțiuni (40% Time Shift, 60% Next Opportunity)
-        timeshift_layout.addWidget(self.timeshift_widget, 40)
-        timeshift_layout.addWidget(next_opportunity_group, 60)
-
-        # Adăugăm containerul în layout-ul principal
-        layout.addWidget(timeshift_container)
-
-        # Adăugăm Scene Editor button sub container
-        self.scene_editor_btn = QPushButton("Scene Editor")
-        self.scene_editor_btn.clicked.connect(self.open_scene_editor)
-        layout.addWidget(self.scene_editor_btn)
-
-        self.log_event("UI", "Creare interfață fază lună")
+        # --- Primul grup: Faza Lunii (panel fotografii) ---
         moon_group = QGroupBox("Faza Lunii")
         moon_layout = QHBoxLayout()
-        moon_layout.setSpacing(20)
+        moon_layout.setSpacing(3)
+        moon_layout.setContentsMargins(5, 0, 5, 0)  # Reduce margins
        
         # Container stânga pentru compas și informații poziție
         left_container = QWidget()
         left_layout = QVBoxLayout()
-       
+        left_layout.setSpacing(3)
+
         self.compass_widget = CompassWidget()
         self.compass_widget.setFixedSize(384, 384)
         left_layout.addWidget(self.compass_widget, alignment=Qt.AlignCenter)
@@ -2027,11 +1918,13 @@ class MoonPhaseWindow(QMainWindow):
         # Container dreapta pentru imagine lună și text
         right_container = QWidget()
         right_layout = QVBoxLayout()
+        right_layout.setSpacing(3)
        
         # Widget-uri pentru imagine
         image_container = QWidget()
         image_layout = QVBoxLayout()
         image_layout.setContentsMargins(0, 0, 0, 0)
+        image_layout.setSpacing(3)
        
         self.moon_image = QLabel()
         self.moon_image.setAlignment(Qt.AlignCenter)
@@ -2051,6 +1944,7 @@ class MoonPhaseWindow(QMainWindow):
         text_container = QWidget()
         text_layout = QVBoxLayout()
         text_layout.setContentsMargins(0, 0, 0, 0)
+        text_layout.setSpacing(3)
        
         self.phase_label = QLabel()
         self.phase_label.setStyleSheet("font-size: 16px; font-weight: bold; color: white;")
@@ -2074,14 +1968,173 @@ class MoonPhaseWindow(QMainWindow):
         moon_layout.addWidget(left_container)
         moon_layout.addWidget(right_container)
         moon_group.setLayout(moon_layout)
-        layout.addWidget(moon_group)
 
+        # --- Al doilea grup: Poziția Lunii ---
+        pos_group = QGroupBox("Poziția Lunii")
+        pos_layout = QVBoxLayout()
+        pos_layout.setSpacing(3)
+       
+        self.elevation_label = QLabel()
+        self.elevation_label.setStyleSheet("font-size: 16px;")
+        self.elevation_label.setAlignment(Qt.AlignCenter)
+        
+        self.azimuth_label = QLabel()
+        self.azimuth_label.setStyleSheet("font-size: 16px;")
+        self.azimuth_label.setAlignment(Qt.AlignCenter)
+        
+        # Adăugăm labels pentru distanță
+        self.distance_label = QLabel()
+        self.distance_label.setStyleSheet("font-size: 16px;")
+        self.distance_label.setAlignment(Qt.AlignCenter)
+        
+        self.distance_progress_label = QLabel()
+        self.distance_progress_label.setTextFormat(Qt.RichText)
+        self.distance_progress_label.setAlignment(Qt.AlignCenter)
+
+        # Reducem spacing-ul între widget-uri dar nu prea mult (apropiat de 1.5)
+        pos_layout.setSpacing(8)
+        
+        # Adăugăm un stretch la început și la sfârșit pentru a centra vertical conținutul
+        pos_layout.addStretch(1)
+        pos_layout.addWidget(self.elevation_label)
+        pos_layout.addWidget(self.azimuth_label)
+        pos_layout.addWidget(self.distance_label)
+        pos_layout.addWidget(self.distance_progress_label)
+        pos_layout.addStretch(1)
+
+        pos_group.setLayout(pos_layout)
+
+        # Adăugăm grupurile la al doilea rând
+        mid_layout.addWidget(moon_group, 5)
+        mid_layout.addWidget(pos_group, 1)
+        
+        # Adăugăm al doilea rând la layout-ul principal
+        layout.addWidget(mid_container)
+
+        # === ROW 3: Time Shift + Următoarea Oportunitate + Scene Editor ===
+        bottom_container = QWidget()
+        bottom_layout = QHBoxLayout()
+        bottom_layout.setSpacing(2)
+        bottom_layout.setContentsMargins(0, 0, 0, 0)
+        bottom_container.setLayout(bottom_layout)
+
+        # --- Time Shift ---
+        self.timeshift_widget = TimeshiftWidget(self)
+
+        # --- Următoarea Oportunitate ---
+        next_opportunity_group = QGroupBox("Următoarea Oportunitate")
+        next_opportunity_layout = QHBoxLayout()
+        self.next_opportunity_label = QLabel("Nu există oportunități viitoare")
+        self.next_opportunity_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 14px;
+                padding: 5px;
+            }
+        """)
+        self.next_opportunity_label.setAlignment(Qt.AlignCenter)
+        next_opportunity_layout.addWidget(self.next_opportunity_label)
+        
+        # Butonul "Rating luni pline"
+        self.full_moon_btn = QPushButton("Rating luni pline")
+        self.full_moon_btn.clicked.connect(self.show_full_moon_ratings)
+        next_opportunity_layout.addWidget(self.full_moon_btn)
+        next_opportunity_group.setLayout(next_opportunity_layout)
+
+        # --- Scene Editor button ---
+        scene_editor_container = QWidget()
+        scene_editor_layout = QVBoxLayout()
+        self.scene_editor_btn = QPushButton("Scene Editor")
+        self.scene_editor_btn.clicked.connect(self.open_scene_editor)
+        self.scene_editor_btn.setFixedHeight(60)  # Make button taller to match other elements
+        self.scene_editor_btn.setStyleSheet("""
+            QPushButton {
+                font-size: 14px;
+                font-weight: bold;
+            }
+        """)
+        scene_editor_layout.addWidget(self.scene_editor_btn)
+        scene_editor_container.setLayout(scene_editor_layout)
+
+        # Adăugăm cele trei elemente la al treilea rând
+        bottom_layout.addWidget(self.timeshift_widget, 5)
+        bottom_layout.addWidget(next_opportunity_group, 4)
+        bottom_layout.addWidget(scene_editor_container, 1)
+
+        # Adăugăm al treilea rând la layout-ul principal
+        layout.addWidget(bottom_container)
+
+        # Footer cu nume autor
+        self.author_label = QLabel("Mihai Mereu")
+        self.author_label.setStyleSheet("""
+            QLabel {
+                color: #808080;
+                font-size: 12px;
+                padding: 0px;
+                margin: 0px;
+            }
+        """)
+        self.author_label.setAlignment(Qt.AlignRight | Qt.AlignBottom)
+        self.author_label.setFixedHeight(15)
+        layout.addWidget(self.author_label, 0, Qt.AlignRight)
+        layout.setContentsMargins(10, 5, 10, 0)
+
+        # Setăm stylesheet-ul pentru aplicație
+        self.setStyleSheet("""
+            QMainWindow, QWidget {
+                background-color: #2b2b2b;
+            }
+            QGroupBox {
+                border: 2px solid #404040;
+                border-radius: 6px;
+                margin-top: 3px;
+                padding-top: 3px;
+                color: white;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            QLabel, QCheckBox {
+                color: white;
+                font-size: 13px;
+            }
+            QComboBox, QLineEdit {
+                background-color: #404040;
+                color: white;
+                border: 1px solid #505050;
+                border-radius: 4px;
+                padding: 3px 5px;
+                min-height: 25px;
+                font-size: 13px;
+            }
+            QPushButton {
+                background-color: #0d47a1;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 3px 15px;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background-color: #1565c0;
+            }
+        """)
+
+        # Configurare timer și inițializare
         self.log_event("SISTEM", "Configurare timer")
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_all)
         self.timer.start(1000)
 
+        # Restaurare stare aplicație și inițializare scene editor
         self.log_event("RESTAURARE", "Restaurare stare aplicație")
+        self.restore_application_state()
+        
+        print("\n=== INIȚIALIZARE SCENE EDITOR LA PORNIRE ===")
+        self.scene_editor_window = SceneEditorWindow(self)
+        self.update_next_opportunity()
+
+    def restore_application_state(self):
+        """Restaurează starea aplicației la pornire"""
         # 1. Mai întâi restaurăm profilurile în combo
         if 'profiles' in self.settings:
             self.profile_manager.profiles = {
@@ -2107,11 +2160,10 @@ class MoonPhaseWindow(QMainWindow):
             self.log_event("RESTAURARE", f"Restaurare profil: {saved_profile}")
             self.profile_combo.setCurrentText(saved_profile)
 
-        # 4. FOARTE IMPORTANT: Așteptăm să se termine toate restaurările de combo-uri
-        # înainte să activăm vreuna din ele
+        # 4. Așteptăm să se termine toate restaurările de combo-uri
         self.update_moon_data(silent=True)
 
-        # 5. DOAR ACUM activăm ce era activ ultima oară
+        # 5. Activăm view-ul care era activ ultima oară
         active_view = self.settings.get('active_view', 'romania')
         self.log_event("RESTAURARE", f"Activare vizualizare: {active_view}")
 
@@ -2121,25 +2173,6 @@ class MoonPhaseWindow(QMainWindow):
             self.load_selected_profile()
 
         self.print_moon_status()
-
-        self.author_label = QLabel("Mihai Mereu")
-        self.author_label.setStyleSheet("""
-            QLabel {
-                color: #808080;
-                font-size: 14px;
-                padding: 2px;
-                margin: 0px;
-            }
-        """)
-        self.author_label.setAlignment(Qt.AlignRight | Qt.AlignBottom)
-        layout.addWidget(self.author_label, 0, Qt.AlignRight | Qt.AlignBottom)  # modificat aici
-        layout.setContentsMargins(10, 5, 10, 2)  # reducem marginea de jos
-        
-        # După celelalte inițializări, înainte de finalul __init__
-        print("\n=== INIȚIALIZARE SCENE EDITOR LA PORNIRE ===")
-        self.scene_editor_window = SceneEditorWindow(self)
-        # Asigurăm că s-au încărcat scenele înainte să actualizăm oportunitatea
-        self.update_next_opportunity()
 
     def open_scene_editor(self):
         """Deschide fereastra Scene Editor"""

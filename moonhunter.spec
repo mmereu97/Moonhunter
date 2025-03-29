@@ -1,6 +1,7 @@
+
 # -*- mode: python ; coding: utf-8 -*-
 import os
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+from PyInstaller.utils.hooks import collect_submodules
 
 # Colectăm toate submodulele pentru h3 și timezonefinder
 h3_modules = collect_submodules('h3')
@@ -13,10 +14,6 @@ if os.path.exists(poze_path):
     for file in os.listdir(poze_path):
         poze_files.append((os.path.join(poze_path, file), os.path.join('poze_cer', file)))
 
-# Colectăm toate datele pentru h3 și timezonefinder
-h3_datas = collect_data_files('h3')
-timezonefinder_datas = collect_data_files('timezonefinder')
-
 a = Analysis(
     ['moonhunter.py'],
     pathex=[],
@@ -27,9 +24,6 @@ a = Analysis(
         ('de421.bsp', '.'),
         # Adăugăm toate fișierele din folderul poze_cer
         *poze_files,
-        # Adăugăm datele pentru h3 și timezonefinder
-        *h3_datas,
-        *timezonefinder_datas,
     ],
     hiddenimports=[
         *h3_modules,
@@ -41,6 +35,26 @@ a = Analysis(
         'pandas',
         'pytz',
         'requests',
+        'requests.packages',
+        'requests.adapters',
+        'requests.auth',
+        'requests.certs',
+        'requests.cookies',
+        'requests.exceptions', 
+        'requests.hooks',
+        'requests.models',
+        'requests.packages',
+        'requests.structures',
+        'requests.sessions',
+        'requests.status_codes',
+        'requests.utils',
+        'urllib3',
+        'urllib3.contrib',
+        'urllib3.util',
+        'certifi',
+        'idna',
+        'chardet',
+        'charset_normalizer',
         'datetime',
         'math',
         'json',
@@ -75,7 +89,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,  # Setăm la True temporar pentru a vedea erorile
+    console=True,  # Lăsăm True pentru a vedea erorile
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

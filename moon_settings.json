@@ -1,16 +1,16 @@
 {
     "window_size": [
-        1247,
-        1267
+        1136,
+        812
     ],
     "window_position": [
-        799,
-        53
+        880,
+        240
     ],
     "hide_comune": true,
     "romania_view": {
-        "judet": "Alba",
-        "localitate": "Abrud"
+        "judet": "Neam\u021b",
+        "localitate": "Roman"
     },
     "profile_view": "San Francisco",
     "active_view": "romania",
